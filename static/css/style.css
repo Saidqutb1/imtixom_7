@@ -1,5 +1,3 @@
-/* static/css/style.css */
-
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
@@ -14,10 +12,20 @@ header {
     text-align: center;
 }
 
+header nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 header nav a {
     color: white;
     margin: 0 10px;
     text-decoration: none;
+}
+
+header nav a:hover {
+    text-decoration: underline;
 }
 
 main {
@@ -29,7 +37,7 @@ footer {
     color: white;
     text-align: center;
     padding: 10px;
-    position: fixed;
+    position: relative;
     width: 100%;
     bottom: 0;
 }
@@ -50,6 +58,9 @@ form button {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
 
 form button {
@@ -61,5 +72,16 @@ form button {
 
 form button:hover {
     background-color: #45a049;
+}
+
+
+@media (max-width: 768px) {
+    header nav {
+        flex-direction: column;
+    }
+
+    header nav a {
+        margin: 5px;
+    }
 }
 
