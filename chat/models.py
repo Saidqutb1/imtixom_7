@@ -27,17 +27,17 @@ class Message(models.Model):
         return f"{self.sender} to {self.receiver}: {self.text[:20]}"
 
 
-# class Profile(models.Model):
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     last_seen = models.DateTimeField(default=timezone.now)
-#     online = models.BooleanField(default=False)
-#
-#     def __str__(self):
-#         return self.user.username
-#
-# @receiver(post_save, sender=User)
-# def create_or_user_profile(sender, instance, create, **kwargs):
-#     if create:
-#         Profile.objects.create(user=instance)
-#     instance.profile.save()
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    last_seen = models.DateTimeField(default=timezone.now)
+    online = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user.username
+
+@receiver(post_save, sender=User)
+def create_or_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    instance.profile.save()
 

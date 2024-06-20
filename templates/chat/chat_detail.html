@@ -4,7 +4,12 @@
 {% block title %}Chat{% endblock %}
 
 {% block content %}
-<h2>Chat with {{ other_participant_username }}</h2>
+<h2>Chat with {{ other_participant.username }}</h2>
+{% if other_participant.profile.online %}
+    <p>Status: Online</p>
+{% else %}
+    <p>Status: Offline (Last seen: {{ other_participant.profile.last_seen|date:"d M Y H:i:s" }})</p>
+{% endif %}
 <div>
     {% for message in messages %}
         <p><strong>{{ message.sender.username }}:</strong> {{ message.text }}</p>
@@ -32,6 +37,7 @@
     <button type="submit">Send</button>
 </form>
 {% endblock %}
+
 
 
 

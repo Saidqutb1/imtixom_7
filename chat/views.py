@@ -1,15 +1,22 @@
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-
+from django.utils import timezone
 from .forms import MessageForm
-from .models import Chat, Message
+from .models import Chat, Message, Profile
 from django.contrib.auth.models import User
 from django.db.models import Q
 
 @login_required
 def chat_list(request):
+    if not hasattr(request.user, 'profile'):
+        Profile.objects.create(user=request.user)
+
+    request.user.profile.online = True
+    request.user.profile.last_seen = timezone.now()
+    request.user.profile.save()
+
     chats = Chat.objects.filter(participants=request.user)
     search_query = request.GET.get('q')
     search_results = None
@@ -27,27 +34,23 @@ def chat_detail(request, chat_id):
     if request.method == 'POST':
         form = MessageForm(request.POST, request.FILES)
         if form.is_valid():
-            receiver = chat.participants.exclude(id=request.user.id).first()
             message = form.save(commit=False)
             message.sender = request.user
-            message.receiver = receiver
+            message.receiver = chat.participants.exclude(id=request.user.id).first()
             message.chat = chat
             message.save()
-            form = MessageForm()
-
     else:
         form = MessageForm()
 
     messages = Message.objects.filter(chat=chat)
-    other_participant_username = chat.participants.exclude(id=request.user.id).first().username
+    other_participant = chat.participants.exclude(id=request.user.id).first()
 
     return render(request, 'chat/chat_detail.html', {
         'chat': chat,
         'messages': messages,
-        'other_participant_username': other_participant_username,
-        'form': form,
+        'other_participant': other_participant,
+        'form': form
     })
-
 @login_required
 def start_chat(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
@@ -74,6 +77,10 @@ def signup(request):
         form = UserCreationForm()
     return render(request, 'registration/signup.html', {'form': form})
 
-
+def user_logout(request):
+    request.user.profile.online = False
+    request.user.profile.save()
+    logout(request)
+    return redirect('home')
 
 
