@@ -7,6 +7,8 @@ from .forms import MessageForm
 from .models import Chat, Message, Profile
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 @login_required
 def chat_list(request):
@@ -82,5 +84,24 @@ def user_logout(request):
     request.user.profile.save()
     logout(request)
     return redirect('home')
+
+@login_required
+def delete_chat(request, chat_id):
+    chat = get_object_or_404(Chat, id=chat_id)
+    if request.user not in chat.participants.all():
+        return redirect('chat_list')
+
+    if request.method == "POST":
+        if 'delete_for_me' in request.POST:
+            chat.participants.remove(request.user)
+            if chat.participants.count() == 0:
+                chat.delete()
+            return redirect('chat_list')
+        elif 'delete_for_both' in request.POST:
+            chat.delete()
+            return redirect('chat_list')
+        elif 'cancel' in request.POST:
+            return redirect('chat_detail', chat_id=chat.id)
+    return render(request, 'chat/confirm_delete.html', {'chat': chat})
 
 

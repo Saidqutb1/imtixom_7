@@ -2,14 +2,11 @@
 
 {% block content %}
 <h2>Your Chats</h2>
-
-<!-- Search Form -->
 <form method="GET" action="{% url 'chat_list' %}">
     <input type="text" name="q" placeholder="Search for users...">
     <button type="submit">Search</button>
 </form>
 
-<!-- Search Results -->
 {% if search_results %}
     <h3>Search Results:</h3>
     <ul>
@@ -19,7 +16,6 @@
     </ul>
 {% endif %}
 
-<!-- Chat List -->
 <h3>Your Chats:</h3>
 <ul>
     {% for chat in chats %}

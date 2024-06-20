@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+<h2>Confirm Delete</h2>
+<p>Are you sure you want to delete this chat?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" name="delete_for_me">Delete for Me</button>
+    <button type="submit" name="delete_for_both">Delete for Both</button>
+    <button type="submit" name="cancel">Cancel</button>
+</form>
+{% endblock %}
