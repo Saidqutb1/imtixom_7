@@ -37,9 +37,10 @@ footer {
     color: white;
     text-align: center;
     padding: 10px;
-    position: relative;
     width: 100%;
-    bottom: 0;
+    position: relative;
+    top: 400px;
+
 }
 
 h1, h2 {

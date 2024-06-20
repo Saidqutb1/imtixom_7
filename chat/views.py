@@ -2,6 +2,8 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+
+from .forms import MessageForm
 from .models import Chat, Message
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -23,14 +25,18 @@ def chat_detail(request, chat_id):
         return redirect('chat_list')
 
     if request.method == 'POST':
-        receiver = chat.participants.exclude(id=request.user.id).first()
-        message = Message(
-            sender=request.user,
-            receiver=receiver,
-            text=request.POST['text'],
-            chat=chat
-        )
-        message.save()
+        form = MessageForm(request.POST, request.FILES)
+        if form.is_valid():
+            receiver = chat.participants.exclude(id=request.user.id).first()
+            message = form.save(commit=False)
+            message.sender = request.user
+            message.receiver = receiver
+            message.chat = chat
+            message.save()
+            form = MessageForm()
+
+    else:
+        form = MessageForm()
 
     messages = Message.objects.filter(chat=chat)
     other_participant_username = chat.participants.exclude(id=request.user.id).first().username
@@ -38,9 +44,9 @@ def chat_detail(request, chat_id):
     return render(request, 'chat/chat_detail.html', {
         'chat': chat,
         'messages': messages,
-        'other_participant_username': other_participant_username
+        'other_participant_username': other_participant_username,
+        'form': form,
     })
-
 
 @login_required
 def start_chat(request, user_id):

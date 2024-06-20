@@ -7,14 +7,32 @@
 <div>
     {% for message in messages %}
         <p><strong>{{ message.sender.username }}:</strong> {{ message.text }}</p>
+        {% if message.file %}
+            {% if message.file.url.endswith(".jpg") or message.file.url.endswith(".jpeg") or message.file.url.endswith(".png") %}
+                <p><img src="{{ message.file.url }}" style="max-width: 300px; max-height: 300px;"></p>
+            {% elif message.file.url.endswith(".mp4") %}
+                <p><video width="320" height="240" controls>
+                    <source src="{{ message.file.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video></p>
+            {% elif message.file.url.endswith(".mp3") %}
+                <p><audio controls>
+                    <source src="{{ message.file.url }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio></p>
+            {% endif %}
+        {% endif %}
     {% endfor %}
 </div>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <textarea name="text" rows="3"></textarea>
+    {{ form.text }}
+    {{ form.file }}
     <button type="submit">Send</button>
 </form>
 {% endblock %}
+
+
 
 
 
