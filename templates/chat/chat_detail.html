@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load custom_filters %}
 
 {% block title %}Chat{% endblock %}
 
@@ -8,14 +9,14 @@
     {% for message in messages %}
         <p><strong>{{ message.sender.username }}:</strong> {{ message.text }}</p>
         {% if message.file %}
-            {% if message.file.url.endswith(".jpg") or message.file.url.endswith(".jpeg") or message.file.url.endswith(".png") %}
+            {% if message.file.url|is_image %}
                 <p><img src="{{ message.file.url }}" style="max-width: 300px; max-height: 300px;"></p>
-            {% elif message.file.url.endswith(".mp4") %}
+            {% elif message.file.url|is_video %}
                 <p><video width="320" height="240" controls>
                     <source src="{{ message.file.url }}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video></p>
-            {% elif message.file.url.endswith(".mp3") %}
+            {% elif message.file.url|is_audio %}
                 <p><audio controls>
                     <source src="{{ message.file.url }}" type="audio/mpeg">
                     Your browser does not support the audio element.
@@ -31,6 +32,7 @@
     <button type="submit">Send</button>
 </form>
 {% endblock %}
+
 
 
 

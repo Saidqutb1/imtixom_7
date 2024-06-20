@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 # Create your models here.
@@ -25,4 +27,17 @@ class Message(models.Model):
         return f"{self.sender} to {self.receiver}: {self.text[:20]}"
 
 
+# class Profile(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
+#     last_seen = models.DateTimeField(default=timezone.now)
+#     online = models.BooleanField(default=False)
+#
+#     def __str__(self):
+#         return self.user.username
+#
+# @receiver(post_save, sender=User)
+# def create_or_user_profile(sender, instance, create, **kwargs):
+#     if create:
+#         Profile.objects.create(user=instance)
+#     instance.profile.save()
 
