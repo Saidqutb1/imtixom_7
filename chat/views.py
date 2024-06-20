@@ -41,16 +41,19 @@ def chat_detail(request, chat_id):
         'other_participant_username': other_participant_username
     })
 
+
 @login_required
 def start_chat(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
+    if other_user == request.user:
+        return redirect('chat_list')
     chat = Chat.objects.filter(participants=request.user).filter(participants=other_user).first()
     if not chat:
         chat = Chat.objects.create()
         chat.participants.set([request.user, other_user])
         chat.save()
-    return redirect('chat_detail', chat_id=chat.id)
 
+    return redirect('chat_detail', chat_id=chat.id)
 def home(request):
     return render(request, 'home.html')
 
