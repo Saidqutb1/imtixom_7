@@ -1,32 +1,40 @@
 {% extends "base.html" %}
 {% load custom_filters %}
 
-{% block title %}Chat{% endblock %}
+{% block title %}Чат{% endblock %}
 
 {% block content %}
-<h2>Chat with {{ other_participant.username }}</h2>
+<h2>Чат с {{ other_participant.username }}</h2>
 {% if other_participant.profile.online %}
-    <p>Status: Online</p>
+    <p>Статус: В сети</p>
 {% else %}
-    <p>Status: Offline (Last seen: {{ other_participant.profile.last_seen|date:"d M Y H:i:s" }})</p>
+    <p>Статус: Не в сети (Был(а) в сети: {{ other_participant.profile.last_seen|date:"d M Y H:i:s" }})</p>
 {% endif %}
 <div>
     {% for message in messages %}
-        <p><strong>{{ message.sender.username }}:</strong> {{ message.text }}</p>
-        {% if message.file %}
-            {% if message.file.url|is_image %}
-                <p><img src="{{ message.file.url }}" style="max-width: 300px; max-height: 300px;"></p>
-            {% elif message.file.url|is_video %}
-                <p><video width="320" height="240" controls>
-                    <source src="{{ message.file.url }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video></p>
-            {% elif message.file.url|is_audio %}
-                <p><audio controls>
-                    <source src="{{ message.file.url }}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio></p>
-            {% endif %}
+        {% if request.user not in message.deleted_for.all %}
+            <div style="position: relative;">
+                <p><strong>{{ message.sender.username }}:</strong> {{ message.text }}</p>
+                {% if message.file %}
+                    {% if message.file.url|is_image %}
+                        <p><img src="{{ message.file.url }}" style="max-width: 300px; max-height: 300px;"></p>
+                    {% elif message.file.url|is_video %}
+                        <p><video width="320" height="240" controls>
+                            <source src="{{ message.file.url }}" type="video/mp4">
+                            Ваш браузер не поддерживает видео тег.
+                        </video></p>
+                    {% elif message.file.url|is_audio %}
+                        <p><audio controls>
+                            <source src="{{ message.file.url }}" type="audio/mpeg">
+                            Ваш браузер не поддерживает аудио элемент.
+                        </audio></p>
+                    {% endif %}
+                {% endif %}
+                <div style="position: absolute; right: 0; top: 0;">
+                    <a href="{% url 'update_message' message.id %}">Update</a>
+                    <a href="{% url 'delete_message' message.id %}">Delete</a>
+                </div>
+            </div>
         {% endif %}
     {% endfor %}
 </div>
@@ -34,10 +42,36 @@
     {% csrf_token %}
     {{ form.text }}
     {{ form.file }}
-    <button type="submit">Send</button>
+    <button type="submit">Отправить</button>
 </form>
-<a href="{% url 'delete_chat' chat.id %}">Delete Chat</a>  <!-- Кнопка удаления чата -->
+<a href="{% url 'delete_chat' chat.id %}">Удалить чат</a>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteLinks = document.querySelectorAll('.delete-link');
+        deleteLinks.forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var messageId = this.dataset.messageId;
+                var modal = document.getElementById('deleteModal');
+                var form = document.getElementById('deleteMessageForm');
+                form.action = `/message/${messageId}/delete/`;
+                modal.style.display = 'block';
+            });
+        });
+
+        var cancelButton = document.querySelector('.cancel-button');
+        cancelButton.addEventListener('click', function() {
+            var modal = document.getElementById('deleteModal');
+            modal.style.display = 'none';
+        });
+    });
+</script>
 {% endblock %}
+
+
+
 
 
 

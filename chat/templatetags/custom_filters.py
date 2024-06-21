@@ -2,14 +2,14 @@ from django import template
 
 register = template.Library()
 
-@register.filter(name='is_image')
+@register.filter
 def is_image(file_url):
-    return file_url.lower().endswith(('.jpg', '.jpeg', '.png'))
+    return file_url.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))
 
-@register.filter(name='is_video')
+@register.filter
 def is_video(file_url):
-    return file_url.lower().endswith('.mp4')
+    return file_url.lower().endswith(('.mp4', '.avi', '.mov', '.wmv'))
 
-@register.filter(name='is_audio')
+@register.filter
 def is_audio(file_url):
-    return file_url.lower().endswith('.mp3')
+    return file_url.lower().endswith(('.mp3', '.wav', '.ogg'))

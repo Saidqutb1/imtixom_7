@@ -8,7 +8,7 @@ from .models import Chat, Message, Profile
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse
 
 @login_required
 def chat_list(request):
@@ -104,4 +104,31 @@ def delete_chat(request, chat_id):
             return redirect('chat_detail', chat_id=chat.id)
     return render(request, 'chat/confirm_delete.html', {'chat': chat})
 
+
+@login_required
+def delete_message(request, message_id):
+    message = get_object_or_404(Message, id=message_id)
+    if request.method == "POST":
+        if 'delete_for_me' in request.POST:
+            message.deleted_for.add(request.user)
+            message.save()
+        elif 'delete_for_both' in request.POST:
+            message.delete()
+        return redirect('chat_detail', chat_id=message.chat.id)
+    return render(request, 'chat/delete_message.html', {'message': message})
+
+
+@login_required
+def update_message(request, message_id):
+    message = get_object_or_404(Message, id=message_id)
+    if request.method == 'POST':
+        form = MessageForm(request.POST, request.FILES, instance=message)
+        if form.is_valid():
+            form.save()
+            return redirect('chat_detail', chat_id=message.chat.id)
+        else:
+            return render(request, 'chat/update_message.html', {'form': form, 'message': message, 'errors': form.errors})
+    else:
+        form = MessageForm(instance=message)
+    return render(request, 'chat/update_message.html', {'form': form, 'message': message})
 

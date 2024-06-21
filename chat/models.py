@@ -22,6 +22,7 @@ class Message(models.Model):
     text = models.TextField(blank=True)
     file = models.FileField(upload_to='uploads/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    deleted_for = models.ManyToManyField(User, related_name='deleted_messages', blank=True)
 
     def __str__(self):
         return f"{self.sender} to {self.receiver}: {self.text[:20]}"
