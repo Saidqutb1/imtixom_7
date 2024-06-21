@@ -41,6 +41,7 @@ def chat_detail(request, chat_id):
             message.receiver = chat.participants.exclude(id=request.user.id).first()
             message.chat = chat
             message.save()
+            return redirect('chat_detail', chat_id=chat.id)
     else:
         form = MessageForm()
 

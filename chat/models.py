@@ -21,6 +21,7 @@ class Message(models.Model):
     receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
     text = models.TextField(blank=True)
     file = models.FileField(upload_to='uploads/', blank=True, null=True)
+    # audio_file = models.FileField(upload_to='audio_uploads/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     deleted_for = models.ManyToManyField(User, related_name='deleted_messages', blank=True)
 

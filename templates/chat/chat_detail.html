@@ -38,37 +38,131 @@
         {% endif %}
     {% endfor %}
 </div>
+
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.text }}
     {{ form.file }}
     <button type="submit">Отправить</button>
 </form>
+
 <a href="{% url 'delete_chat' chat.id %}">Удалить чат</a>
 
+<!-- Форма и кнопки для записи и отправки аудиосообщения -->
+<div>
+    <button id="recordAudioButton">Записать аудиосообщение</button>
+    <button id="stopAudioButton" disabled>Остановить запись</button>
+    <audio id="audioPlayback" style="display: none;" controls></audio>
+    <button id="sendAudioButton" disabled>Отправить аудиосообщение</button>
+</div>
+
+<form id="audioForm" method="post" enctype="multipart/form-data" style="display: none;">
+    {% csrf_token %}
+    <input type="file" id="audioFile" name="file">
+</form>
+
+<!-- Форма и кнопки для записи и отправки видеосообщения -->
+<div>
+    <button id="recordVideoButton">Записать видеосообщение</button>
+    <button id="stopVideoButton" disabled>Остановить запись</button>
+    <video id="videoPlayback" style="display: none;" controls></video>
+    <button id="sendVideoButton" disabled>Отправить видеосообщение</button>
+</div>
+
+<form id="videoForm" method="post" enctype="multipart/form-data" style="display: none;">
+    {% csrf_token %}
+    <input type="file" id="videoFile" name="file">
+</form>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var deleteLinks = document.querySelectorAll('.delete-link');
-        deleteLinks.forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                var messageId = this.dataset.messageId;
-                var modal = document.getElementById('deleteModal');
-                var form = document.getElementById('deleteMessageForm');
-                form.action = `/message/${messageId}/delete/`;
-                modal.style.display = 'block';
-            });
+    // Аудиозапись
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioBlob;
+
+    document.getElementById('recordAudioButton').addEventListener('click', async () => {
+        let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.start();
+        audioChunks = [];
+
+        mediaRecorder.addEventListener('dataavailable', event => {
+            audioChunks.push(event.data);
         });
 
-        var cancelButton = document.querySelector('.cancel-button');
-        cancelButton.addEventListener('click', function() {
-            var modal = document.getElementById('deleteModal');
-            modal.style.display = 'none';
+        mediaRecorder.addEventListener('stop', () => {
+            audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
+            let audioUrl = URL.createObjectURL(audioBlob);
+            let audio = document.getElementById('audioPlayback');
+            audio.src = audioUrl;
+            audio.style.display = 'block';
+
+            let audioFileInput = document.getElementById('audioFile');
+            let dataTransfer = new DataTransfer();
+            dataTransfer.items.add(new File([audioBlob], 'audio_message.mp3'));
+            audioFileInput.files = dataTransfer.files;
+            document.getElementById('sendAudioButton').disabled = false;
         });
+
+        document.getElementById('recordAudioButton').disabled = true;
+        document.getElementById('stopAudioButton').disabled = false;
+    });
+
+    document.getElementById('stopAudioButton').addEventListener('click', () => {
+        mediaRecorder.stop();
+        document.getElementById('recordAudioButton').disabled = false;
+        document.getElementById('stopAudioButton').disabled = true;
+    });
+
+    document.getElementById('sendAudioButton').addEventListener('click', () => {
+        document.getElementById('audioForm').submit();
+    });
+
+    // Видеозапись
+    let videoMediaRecorder;
+    let videoChunks = [];
+    let videoBlob;
+
+    document.getElementById('recordVideoButton').addEventListener('click', async () => {
+        let stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        videoMediaRecorder = new MediaRecorder(stream);
+        videoMediaRecorder.start();
+        videoChunks = [];
+
+        videoMediaRecorder.addEventListener('dataavailable', event => {
+            videoChunks.push(event.data);
+        });
+
+        videoMediaRecorder.addEventListener('stop', () => {
+            videoBlob = new Blob(videoChunks, { type: 'video/mp4' });
+            let videoUrl = URL.createObjectURL(videoBlob);
+            let video = document.getElementById('videoPlayback');
+            video.src = videoUrl;
+            video.style.display = 'block';
+
+            let videoFileInput = document.getElementById('videoFile');
+            let dataTransfer = new DataTransfer();
+            dataTransfer.items.add(new File([videoBlob], 'video_message.mp4'));
+            videoFileInput.files = dataTransfer.files;
+            document.getElementById('sendVideoButton').disabled = false;
+        });
+
+        document.getElementById('recordVideoButton').disabled = true;
+        document.getElementById('stopVideoButton').disabled = false;
+    });
+
+    document.getElementById('stopVideoButton').addEventListener('click', () => {
+        videoMediaRecorder.stop();
+        document.getElementById('recordVideoButton').disabled = false;
+        document.getElementById('stopVideoButton').disabled = true;
+    });
+
+    document.getElementById('sendVideoButton').addEventListener('click', () => {
+        document.getElementById('videoForm').submit();
     });
 </script>
 {% endblock %}
+
 
 
 
