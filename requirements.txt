@@ -1,10 +1,11 @@
-asgiref
-channels
-channels-redis
-Django
-msgpack
-redis
-sqlparse
-twisted-iocpsupport
-tzdata
+asgiref==3.8.1
+channels==4.1.0
+channels-redis==4.2.0
+Django==5.0.6
+msgpack==1.0.8
+redis==5.0.6
+sqlparse==0.5.0
+twisted-iocpsupport==1.0.4
+tzdata==2024.1
+
 
