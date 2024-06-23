@@ -5,15 +5,16 @@
 
 {% block content %}
 <h2>Чат с {{ other_participant.username }}</h2>
-{% if other_participant.profile.online %}
-    <p>Статус: В сети</p>
+{% if other_participant.profile.is_online %}
+    <p>{{ other_participant.username }} is online</p>
 {% else %}
-    <p>Статус: Не в сети (Был(а) в сети: {{ other_participant.profile.last_seen|date:"d M Y H:i:s" }})</p>
+    <p>{{ other_participant.username }} is offline (Был(а) в сети: {{ other_participant.profile.last_seen|date:"d M Y H:i:s" }})</p>
 {% endif %}
-<div>
+
+<div class="messages">
     {% for message in messages %}
         {% if request.user not in message.deleted_for.all %}
-            <div style="position: relative;">
+            <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}" style="position: relative;">
                 <p><strong>{{ message.sender.username }}:</strong> {{ message.text }}</p>
                 {% if message.file %}
                     {% if message.file.url|is_image %}
@@ -31,9 +32,12 @@
                     {% endif %}
                 {% endif %}
                 <div style="position: absolute; right: 0; top: 0;">
-                    <a href="{% url 'update_message' message.id %}">Update</a>
-                    <a href="{% url 'delete_message' message.id %}">Delete</a>
+                    {% if message.sender == user %}
+                        <a href="{% url 'update_message' message.id %}">Update</a>
+                        <a href="{% url 'delete_message' message.id %}">Delete</a>
+                    {% endif %}
                 </div>
+                <small>{{ message.timestamp }} {% if message.is_read %} (Read) {% endif %}</small>
             </div>
         {% endif %}
     {% endfor %}
@@ -43,7 +47,7 @@
     {% csrf_token %}
     {{ form.text }}
     {{ form.file }}
-    <button type="submit">Отправить</button>
+    <button type="submit">Send</button>
 </form>
 
 <a href="{% url 'delete_chat' chat.id %}">Удалить чат</a>
@@ -162,12 +166,4 @@
     });
 </script>
 {% endblock %}
-
-
-
-
-
-
-
-
 

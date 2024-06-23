@@ -46,6 +46,10 @@ def chat_detail(request, chat_id):
         form = MessageForm()
 
     messages = Message.objects.filter(chat=chat)
+
+    unread_messages = messages.filter(receiver=request.user, is_read=False)
+    unread_messages.update(is_read=True)
+
     other_participant = chat.participants.exclude(id=request.user.id).first()
 
     return render(request, 'chat/chat_detail.html', {
@@ -122,6 +126,9 @@ def delete_message(request, message_id):
 @login_required
 def update_message(request, message_id):
     message = get_object_or_404(Message, id=message_id)
+    if message.sender != request.user:
+        return redirect('chat_detail', chat_id=message.chat.id)
+
     if request.method == 'POST':
         form = MessageForm(request.POST, request.FILES, instance=message)
         if form.is_valid():

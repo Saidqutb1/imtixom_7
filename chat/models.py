@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -24,6 +26,7 @@ class Message(models.Model):
     # audio_file = models.FileField(upload_to='audio_uploads/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     deleted_for = models.ManyToManyField(User, related_name='deleted_messages', blank=True)
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.sender} to {self.receiver}: {self.text[:20]}"
@@ -33,6 +36,10 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     last_seen = models.DateTimeField(default=timezone.now)
     online = models.BooleanField(default=False)
+
+    def is_online(self):
+        now = timezone.now()
+        return self.online and (now - self.last_seen) < datetime.timedelta(minutes=5)
 
     def __str__(self):
         return self.user.username
